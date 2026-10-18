@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+8.3
+---
+
+ * Add `TranslatableMoney` to format an amount in a given currency with the locale of the translation
+
 8.2
 ---
 
