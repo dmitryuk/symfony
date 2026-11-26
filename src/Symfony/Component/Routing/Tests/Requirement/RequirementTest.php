@@ -123,6 +123,46 @@ class RequirementTest extends TestCase
         );
     }
 
+    #[TestWith(['1'])]
+    #[TestWith(['42'])]
+    #[TestWith(['999999999'])]
+    #[TestWith(['1000000000'])]
+    #[TestWith(['1999999999'])]
+    #[TestWith(['2099999999'])]
+    #[TestWith(['2139999999'])]
+    #[TestWith(['2146999999'])]
+    #[TestWith(['2147399999'])]
+    #[TestWith(['2147479999'])]
+    #[TestWith(['2147482999'])]
+    #[TestWith(['2147483599'])]
+    #[TestWith(['2147483639'])]
+    #[TestWith(['2147483647'])]
+    public function testPositiveInt32OK(string $int)
+    {
+        $this->assertMatchesRegularExpression(
+            (new Route('/{int}', [], ['int' => Requirement::POSITIVE_INT32]))->compile()->getRegex(),
+            '/'.$int,
+        );
+    }
+
+    #[TestWith([''])]
+    #[TestWith(['0'])]
+    #[TestWith(['01'])]
+    #[TestWith(['-1'])]
+    #[TestWith(['foo'])]
+    #[TestWith(['3.14'])]
+    #[TestWith(['2147483648'])]
+    #[TestWith(['2147483650'])]
+    #[TestWith(['2200000000'])]
+    #[TestWith(['10000000000'])]
+    public function testPositiveInt32KO(string $int)
+    {
+        $this->assertDoesNotMatchRegularExpression(
+            (new Route('/{int}', [], ['int' => Requirement::POSITIVE_INT32]))->compile()->getRegex(),
+            '/'.$int,
+        );
+    }
+
     #[TestWith(['67c8b7d295c70befc3070bf2'])]
     #[TestWith(['000000000000000000000000'])]
     public function testMongoDbIdOK(string $id)

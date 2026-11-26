@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+8.3
+---
+
+ * Add `Requirement::POSITIVE_INT32` to match positive signed 32-bit integers (1 to 2147483647)
+
 8.2
 ---
 
