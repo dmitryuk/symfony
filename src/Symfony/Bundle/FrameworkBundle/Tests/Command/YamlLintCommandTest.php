@@ -95,7 +95,7 @@ bar';
 
     private function createFile($content): string
     {
-        $filename = tempnam(sys_get_temp_dir().'/yml-lint-test', 'sf-');
+        $filename = tempnam(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__), 'sf-');
         file_put_contents($filename, $content);
 
         $this->files[] = $filename;
@@ -124,7 +124,7 @@ bar';
             ->expects($this->once())
             ->method('locateResource')
             ->with('@AppBundle/Resources')
-            ->willReturn(sys_get_temp_dir().'/yml-lint-test');
+            ->willReturn(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__));
 
         $application = $this->createMock(Application::class);
         $application
@@ -152,7 +152,7 @@ bar';
 
     protected function setUp(): void
     {
-        @mkdir(sys_get_temp_dir().'/yml-lint-test');
+        @mkdir(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__));
         $this->files = [];
     }
 
@@ -163,6 +163,6 @@ bar';
                 @unlink($file);
             }
         }
-        @rmdir(sys_get_temp_dir().'/yml-lint-test');
+        @rmdir(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__));
     }
 }
