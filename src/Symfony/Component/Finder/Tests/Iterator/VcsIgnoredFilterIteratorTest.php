@@ -753,6 +753,44 @@ class VcsIgnoredFilterIteratorTest extends IteratorTestCase
         ]), $iterator);
     }
 
+    public function testFinderDoesNotTraverseIgnoredDirectories()
+    {
+        mkdir($this->tmpDir.'/.git');
+        mkdir($this->tmpDir.'/node_modules/package', 0o777, true);
+        file_put_contents($this->tmpDir.'/.gitignore', "/node_modules/\n");
+        touch($this->tmpDir.'/node_modules/package/index.js');
+        touch($this->tmpDir.'/visible.txt');
+
+        $visited = [];
+        $finder = Finder::create()
+            ->files()
+            ->in($this->tmpDir)
+            ->ignoreVCSIgnored(true)
+            ->filter(static function (\SplFileInfo $file) use (&$visited): bool {
+                $visited[] = str_replace('\\', '/', $file->getRelativePathname());
+
+                return true;
+            });
+
+        $this->assertIterator($this->toAbsolute(['visible.txt']), $finder->getIterator());
+        sort($visited);
+        $this->assertSame(['.gitignore', 'visible.txt'], $visited);
+    }
+
+    public function testFinderIteratorIsFreedOnUnset()
+    {
+        mkdir($this->tmpDir.'/.git');
+        touch($this->tmpDir.'/visible.txt');
+
+        $iterator = Finder::create()->files()->in($this->tmpDir)->ignoreVCSIgnored(true)->getIterator();
+        $this->assertIterator($this->toAbsolute(['visible.txt']), $iterator);
+
+        $reference = \WeakReference::create($iterator);
+        unset($iterator);
+
+        $this->assertNull($reference->get());
+    }
+
     private function toAbsolute(array $files): array
     {
         foreach ($files as &$path) {
