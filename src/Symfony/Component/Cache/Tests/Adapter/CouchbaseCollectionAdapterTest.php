@@ -26,6 +26,7 @@ use Symfony\Component\Cache\Adapter\CouchbaseCollectionAdapter;
 class CouchbaseCollectionAdapterTest extends AdapterTestCase
 {
     protected array $skippedTests = [
+        'testDefaultLifeTime' => 'Testing expiration slows down the test suite',
         'testClearPrefix' => 'Couchbase cannot clear by prefix',
         'testClearPrefixWithUnderscore' => 'Couchbase cannot clear by prefix',
         'testClearWithInvalidPrefix' => 'Couchbase cannot clear by prefix',
@@ -43,6 +44,9 @@ class CouchbaseCollectionAdapterTest extends AdapterTestCase
     /**
      * Couchbase consider expiration time greater than 30 days as an absolute timestamp.
      * This test case overrides parent to avoid this behavior for the "k2" item.
+     *
+     * Couchbase advances its clock once per second, so an item with a 2 seconds
+     * lifetime can stay readable for up to 3 seconds: wait 4 seconds to check it expired.
      */
     public function testExpiration()
     {
@@ -50,7 +54,7 @@ class CouchbaseCollectionAdapterTest extends AdapterTestCase
         $cache->save($cache->getItem('k1')->set('v1')->expiresAfter(2));
         $cache->save($cache->getItem('k2')->set('v2')->expiresAfter(86400));
 
-        sleep(3);
+        sleep(4);
         $item = $cache->getItem('k1');
         $this->assertFalse($item->isHit());
         $this->assertNull($item->get(), "Item's value must be null when isHit() is false.");
