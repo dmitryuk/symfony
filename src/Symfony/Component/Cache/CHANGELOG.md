@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+8.3
+---
+
+ * Allow enabling SQLite WAL mode with `?wal=1` in PDO and Doctrine DBAL cache DSNs
+
 8.2
 ---
 
