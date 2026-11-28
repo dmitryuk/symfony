@@ -19,15 +19,18 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class GlobResourceTest extends TestCase
 {
+    private string $workspace;
     private ?string $tmpDir = null;
+
+    protected function setUp(): void
+    {
+        $this->workspace = sys_get_temp_dir().'/sf_config_'.hash('xxh32', __FILE__);
+        (new Filesystem())->mirror(\dirname(__DIR__).'/Fixtures/Resource', $this->workspace.'/Resource');
+    }
 
     protected function tearDown(): void
     {
-        $dir = \dirname(__DIR__).'/Fixtures';
-        @rmdir($dir.'/TmpGlob');
-        @unlink($dir.'/TmpGlob');
-        @unlink($dir.'/Resource/TmpGlob');
-        touch($dir.'/Resource/.hiddenFile');
+        (new Filesystem())->remove($this->workspace);
 
         if (null !== $this->tmpDir) {
             (new Filesystem())->remove([$this->tmpDir, $this->tmpDir.'-target']);
@@ -116,7 +119,7 @@ class GlobResourceTest extends TestCase
 
     public function testIsFreshNonRecursiveDetectsNewFile()
     {
-        $dir = \dirname(__DIR__).'/Fixtures';
+        $dir = $this->workspace;
         $resource = new GlobResource($dir, '/*', false);
 
         $this->assertTrue($resource->isFresh(0));
@@ -136,7 +139,7 @@ class GlobResourceTest extends TestCase
 
     public function testIsFreshNonRecursiveDetectsRemovedFile()
     {
-        $dir = \dirname(__DIR__).'/Fixtures';
+        $dir = $this->workspace;
         $resource = new GlobResource($dir, '/*', false);
 
         touch($dir.'/TmpGlob');
@@ -152,7 +155,7 @@ class GlobResourceTest extends TestCase
 
     public function testIsFreshRecursiveDetectsRemovedFile()
     {
-        $dir = \dirname(__DIR__).'/Fixtures';
+        $dir = $this->workspace;
         $resource = new GlobResource($dir, '/*', true);
 
         touch($dir.'/Resource/TmpGlob');
@@ -170,7 +173,7 @@ class GlobResourceTest extends TestCase
 
     public function testIsFreshRecursiveDetectsNewFile()
     {
-        $dir = \dirname(__DIR__).'/Fixtures';
+        $dir = $this->workspace;
         $resource = new GlobResource($dir, '/*', true);
 
         $this->assertTrue($resource->isFresh(0));

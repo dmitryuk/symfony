@@ -2531,12 +2531,14 @@ abstract class FrameworkExtensionTestCase extends TestCase
 
     protected function createContainer(array $data = [])
     {
+        $tmpDir = sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__);
+
         $container = new ContainerBuilder(new EnvPlaceholderParameterBag(array_merge([
             'kernel.bundles' => ['FrameworkBundle' => FrameworkBundle::class],
             'kernel.bundles_metadata' => ['FrameworkBundle' => ['namespace' => 'Symfony\\Bundle\\FrameworkBundle', 'path' => __DIR__.'/../..']],
-            'kernel.cache_dir' => __DIR__,
-            'kernel.build_dir' => __DIR__,
-            'kernel.share_dir' => __DIR__,
+            'kernel.cache_dir' => $tmpDir,
+            'kernel.build_dir' => $tmpDir,
+            'kernel.share_dir' => $tmpDir,
             'kernel.project_dir' => __DIR__,
             'kernel.debug' => false,
             'kernel.environment' => 'test',

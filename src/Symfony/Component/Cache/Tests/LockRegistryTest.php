@@ -42,7 +42,7 @@ class LockRegistryTest extends TestCase
             }
         };
 
-        $pool = new FilesystemAdapter('lock-registry', 0, sys_get_temp_dir().'/symfony-cache-lock-registry');
+        $pool = new FilesystemAdapter('lock-registry', 0, sys_get_temp_dir().'/sf_cache_'.hash('xxh32', __FILE__));
         $pool->clear();
         $pool->setLogger($logger);
 
@@ -65,7 +65,7 @@ class LockRegistryTest extends TestCase
             }
         };
 
-        $pool = new FilesystemAdapter('lock-registry', 0, sys_get_temp_dir().'/symfony-cache-lock-registry');
+        $pool = new FilesystemAdapter('lock-registry', 0, sys_get_temp_dir().'/sf_cache_'.hash('xxh32', __FILE__));
         $pool->clear();
         $pool->setLogger($logger);
         $pool->setCallbackWrapper(LockRegistry::compute(...));

@@ -76,7 +76,7 @@ class XliffLintCommandTest extends TestCase
             ->expects($this->once())
             ->method('locateResource')
             ->with('@AppBundle/Resources')
-            ->willReturn(sys_get_temp_dir().'/xliff-lint-test');
+            ->willReturn(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__));
 
         $application = $this->createMock(Application::class);
         $application
@@ -104,7 +104,7 @@ class XliffLintCommandTest extends TestCase
 
     protected function setUp(): void
     {
-        @mkdir(sys_get_temp_dir().'/xliff-lint-test');
+        @mkdir(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__));
         $this->files = [];
     }
 
@@ -115,6 +115,6 @@ class XliffLintCommandTest extends TestCase
                 @unlink($file);
             }
         }
-        @rmdir(sys_get_temp_dir().'/xliff-lint-test');
+        @rmdir(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__));
     }
 }

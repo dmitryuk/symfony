@@ -51,7 +51,8 @@ class ReflectionClassResourceTest extends TestCase
     public function testIsFreshForDeletedResources()
     {
         $now = time();
-        $tmp = sys_get_temp_dir().'/tmp.php';
+        $tmp = sys_get_temp_dir().'/sf_config_'.hash('xxh32', __FILE__).'/tmp.php';
+        @mkdir(\dirname($tmp));
         file_put_contents($tmp, '<?php class ReflectionClassResourceTestClass {}');
         require $tmp;
 
@@ -64,7 +65,8 @@ class ReflectionClassResourceTest extends TestCase
 
     public function testIsFreshComparesSignaturesOfFilesModifiedInSameSecond()
     {
-        $tmp = sys_get_temp_dir().'/tmp_same_second.php';
+        $tmp = sys_get_temp_dir().'/sf_config_'.hash('xxh32', __FILE__).'/tmp_same_second.php';
+        @mkdir(\dirname($tmp));
         file_put_contents($tmp, '<?php class ReflectionClassResourceSameSecondTestClass {}');
         touch($tmp, $mtime = time() - 10);
         require $tmp;
