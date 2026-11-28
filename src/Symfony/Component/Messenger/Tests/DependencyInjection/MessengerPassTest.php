@@ -41,12 +41,15 @@ use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Middleware\StackInterface;
 use Symfony\Component\Messenger\Tests\Fixtures\ChildDummyMessage;
+use Symfony\Component\Messenger\Tests\Fixtures\DnfTypeArgumentHandler;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyCommand;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyCommandHandler;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyHandlerWithCustomMethods;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyMessage;
+use Symfony\Component\Messenger\Tests\Fixtures\DummyMessageInterface;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyQuery;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyQueryHandler;
+use Symfony\Component\Messenger\Tests\Fixtures\IntersectionTypeArgumentHandler;
 use Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessage;
 use Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessageHandler;
 use Symfony\Component\Messenger\Tests\Fixtures\SecondMessage;
@@ -743,6 +746,19 @@ class MessengerPassTest extends TestCase
         $this->assertHandlerDescriptor($container, $handlersMapping, DummyMessage::class, [UnionTypeArgumentHandler::class]);
     }
 
+    public function testUnionBuiltinArgumentTypeHandlerWithCustomMethod()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(\sprintf('Invalid handler service "%s": type-hint of argument "$message" in method "%s::handle()" must be a class , "string|int" given.', UnionBuiltinTypeArgumentMethodHandler::class, UnionBuiltinTypeArgumentMethodHandler::class));
+        $container = $this->getContainerBuilder();
+        $container
+            ->register(UnionBuiltinTypeArgumentMethodHandler::class, UnionBuiltinTypeArgumentMethodHandler::class)
+            ->addTag('messenger.message_handler', ['method' => 'handle'])
+        ;
+
+        (new MessengerPass())->process($container);
+    }
+
     public function testUnionBuiltinArgumentTypeHandler()
     {
         $this->expectException(RuntimeException::class);
@@ -750,6 +766,32 @@ class MessengerPassTest extends TestCase
         $container = $this->getContainerBuilder();
         $container
             ->register(UnionBuiltinTypeArgumentHandler::class, UnionBuiltinTypeArgumentHandler::class)
+            ->addTag('messenger.message_handler')
+        ;
+
+        (new MessengerPass())->process($container);
+    }
+
+    public function testIntersectionTypeArgumentHandler()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(\sprintf('Invalid handler service "%s": type-hint of argument "$message" in method "%s::__invoke()" cannot be or contain an intersection type, "%s" given. Use the "handles" tag attribute to define the handled message class instead.', IntersectionTypeArgumentHandler::class, IntersectionTypeArgumentHandler::class, DummyMessageInterface::class.'&Countable'));
+        $container = $this->getContainerBuilder();
+        $container
+            ->register(IntersectionTypeArgumentHandler::class, IntersectionTypeArgumentHandler::class)
+            ->addTag('messenger.message_handler')
+        ;
+
+        (new MessengerPass())->process($container);
+    }
+
+    public function testDnfTypeArgumentHandler()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(\sprintf('Invalid handler service "%s": type-hint of argument "$message" in method "%s::__invoke()" cannot be or contain an intersection type, "(%s)|%s" given. Use the "handles" tag attribute to define the handled message class instead.', DnfTypeArgumentHandler::class, DnfTypeArgumentHandler::class, DummyMessageInterface::class.'&Countable', ChildDummyMessage::class));
+        $container = $this->getContainerBuilder();
+        $container
+            ->register(DnfTypeArgumentHandler::class, DnfTypeArgumentHandler::class)
             ->addTag('messenger.message_handler')
         ;
 
@@ -1321,6 +1363,13 @@ class DummyReceiver implements ReceiverInterface
 class UndefinedMessageHandler
 {
     public function __invoke(UndefinedMessage $message)
+    {
+    }
+}
+
+class UnionBuiltinTypeArgumentMethodHandler
+{
+    public function handle(string|int $message): void
     {
     }
 }
