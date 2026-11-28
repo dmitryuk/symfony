@@ -162,6 +162,7 @@ class AmpHttpClientTest extends HttpClientTestCase
     }
 
     #[Group('transient-on-windows')]
+    #[Group('network')]
     public function testMaxConnectDuration()
     {
         parent::testMaxConnectDuration();
