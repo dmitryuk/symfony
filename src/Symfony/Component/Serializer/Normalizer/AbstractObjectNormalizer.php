@@ -1004,10 +1004,10 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
         static $parameterTypeResolver;
         static $resolvedParameterTypes = [];
 
-        if (null !== $parameterType && $parameterTypeResolver ??= class_exists(ReflectionTypeResolver::class) ? new ReflectionTypeResolver() : false) {
+        if (null !== $parameterType) {
             $declaringClassName = $parameter->getDeclaringClass()->name ?? $class->name;
             // resolving "self" and "parent" needs only the class names, not the use statements that TypeContextFactory reads from the class file
-            $resolvedParameterType = $resolvedParameterTypes[$declaringClassName.'::'.$parameter->getDeclaringFunction()->name][$parameter->name] ??= $parameterTypeResolver->resolve($parameterType, new TypeContext($declaringClassName, $declaringClassName));
+            $resolvedParameterType = $resolvedParameterTypes[$declaringClassName.'::'.$parameter->getDeclaringFunction()->name][$parameter->name] ??= ($parameterTypeResolver ??= new ReflectionTypeResolver())->resolve($parameterType, new TypeContext($declaringClassName, $declaringClassName));
             if ($resolvedParameterType->isSatisfiedBy(static fn (Type $t) => match (true) {
                 $t instanceof BuiltinType && \in_array($t->getTypeIdentifier(), [TypeIdentifier::ARRAY, TypeIdentifier::ITERABLE], true) => !$type->isIdentifiedBy(TypeIdentifier::ARRAY) && !$type->isIdentifiedBy(TypeIdentifier::ITERABLE) && !$type->isSatisfiedBy(static fn (Type $c) => $c instanceof CollectionType),
                 $t instanceof BuiltinType && !\in_array($t->getTypeIdentifier(), [TypeIdentifier::NULL, TypeIdentifier::MIXED], true) => !$type->isIdentifiedBy($t->getTypeIdentifier()),
@@ -1015,19 +1015,6 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                 default => false,
             })) {
                 $type = $resolvedParameterType;
-            }
-        } elseif ($parameterType instanceof \ReflectionNamedType) {
-            if ($parameterType->isBuiltin()) {
-                $typeIdentifier = TypeIdentifier::tryFrom($parameterType->getName());
-
-                if (null !== $typeIdentifier && TypeIdentifier::MIXED !== $typeIdentifier && !$type->isIdentifiedBy($typeIdentifier)) {
-                    $type = Type::builtin($typeIdentifier);
-                }
-            } elseif (!$type->isIdentifiedBy($parameterType->getName())) {
-                $type = Type::object($parameterType->getName());
-            }
-            if ($parameter->allowsNull()) {
-                $type = Type::nullable($type);
             }
         }
 
