@@ -21,13 +21,13 @@ class VcsIgnoredFilterIteratorTest extends IteratorTestCase
 
     protected function setUp(): void
     {
-        $this->tmpDir = realpath(sys_get_temp_dir()).\DIRECTORY_SEPARATOR.'symfony_finder_vcs_ignored';
-        mkdir($this->tmpDir);
+        $this->tmpDir = realpath(sys_get_temp_dir()).\DIRECTORY_SEPARATOR.'sf_finder_'.hash('xxh32', __FILE__).\DIRECTORY_SEPARATOR.'vcs_ignored';
+        mkdir($this->tmpDir, 0o777, true);
     }
 
     protected function tearDown(): void
     {
-        $this->removeDirectory($this->tmpDir);
+        $this->removeDirectory(\dirname($this->tmpDir));
     }
 
     /**
@@ -751,6 +751,44 @@ class VcsIgnoredFilterIteratorTest extends IteratorTestCase
             'dir-link',
             'dir-link/app.php',
         ]), $iterator);
+    }
+
+    public function testFinderDoesNotTraverseIgnoredDirectories()
+    {
+        mkdir($this->tmpDir.'/.git');
+        mkdir($this->tmpDir.'/node_modules/package', 0o777, true);
+        file_put_contents($this->tmpDir.'/.gitignore', "/node_modules/\n");
+        touch($this->tmpDir.'/node_modules/package/index.js');
+        touch($this->tmpDir.'/visible.txt');
+
+        $visited = [];
+        $finder = Finder::create()
+            ->files()
+            ->in($this->tmpDir)
+            ->ignoreVCSIgnored(true)
+            ->filter(static function (\SplFileInfo $file) use (&$visited): bool {
+                $visited[] = str_replace('\\', '/', $file->getRelativePathname());
+
+                return true;
+            });
+
+        $this->assertIterator($this->toAbsolute(['visible.txt']), $finder->getIterator());
+        sort($visited);
+        $this->assertSame(['.gitignore', 'visible.txt'], $visited);
+    }
+
+    public function testFinderIteratorIsFreedOnUnset()
+    {
+        mkdir($this->tmpDir.'/.git');
+        touch($this->tmpDir.'/visible.txt');
+
+        $iterator = Finder::create()->files()->in($this->tmpDir)->ignoreVCSIgnored(true)->getIterator();
+        $this->assertIterator($this->toAbsolute(['visible.txt']), $iterator);
+
+        $reference = \WeakReference::create($iterator);
+        unset($iterator);
+
+        $this->assertNull($reference->get());
     }
 
     private function toAbsolute(array $files): array

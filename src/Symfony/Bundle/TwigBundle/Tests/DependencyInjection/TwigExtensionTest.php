@@ -373,7 +373,7 @@ class TwigExtensionTest extends TestCase
     public function testDefaultPathContainingAPercentSign()
     {
         // two percent signs are required: "%2Fother%" is what the parameter bag reads as a reference
-        $projectDir = sys_get_temp_dir().'/sf_twig_my%2Fother%2Fbranch_'.substr(md5(__METHOD__), 0, 8);
+        $projectDir = sys_get_temp_dir().'/sf_twig-bundle_'.hash('xxh32', __FILE__).'/my%2Fother%2Fbranch';
         @mkdir($projectDir.'/templates', 0o777, true);
 
         try {
@@ -391,7 +391,7 @@ class TwigExtensionTest extends TestCase
 
             $this->assertContains($projectDir.'/templates', $paths);
         } finally {
-            (new Filesystem())->remove($projectDir);
+            (new Filesystem())->remove(\dirname($projectDir));
         }
     }
 

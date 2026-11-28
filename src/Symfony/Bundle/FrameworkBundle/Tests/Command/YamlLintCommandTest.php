@@ -130,7 +130,7 @@ bar';
     {
         $this->skipIfJsonSchemaMissing();
 
-        $projectDir = sys_get_temp_dir().'/yml-lint-test';
+        $projectDir = sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__);
         @mkdir($projectDir.'/config/packages', 0o777, true);
         file_put_contents($projectDir.'/config/schema.json', json_encode([
             'type' => 'object',
@@ -165,7 +165,7 @@ bar';
     {
         $this->skipIfJsonSchemaMissing();
 
-        $projectDir = sys_get_temp_dir().'/yml-lint-test';
+        $projectDir = sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__);
         @mkdir($projectDir.'/config/packages', 0o777, true);
         file_put_contents($projectDir.'/config/schema.json', json_encode([
             'type' => 'object',
@@ -193,7 +193,7 @@ bar';
     {
         $this->skipIfJsonSchemaMissing();
 
-        $projectDir = sys_get_temp_dir().'/yml-lint-test';
+        $projectDir = sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__);
         @mkdir($projectDir.'/config/packages', 0o777, true);
         $file = $projectDir.'/config/packages/framework.yaml';
         file_put_contents($file, "# yaml-language-server: \$schema=../schema.json\nversion: 8");
@@ -226,7 +226,7 @@ bar';
             $this->markTestSkipped(\sprintf('The "%s" class is required.', $requiredClass));
         }
 
-        $projectDir = sys_get_temp_dir().'/yml-lint-test';
+        $projectDir = sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__);
         $file = $projectDir.'/'.$relativePath;
         @mkdir(\dirname($file), 0o777, true);
         // A sequence is not an object, which every component schema requires at the root.
@@ -260,7 +260,7 @@ bar';
     {
         $this->skipIfJsonSchemaMissing();
 
-        $projectDir = sys_get_temp_dir().'/yml-lint-test';
+        $projectDir = sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__);
         $file = $projectDir.'/config/routes/app.yaml';
         @mkdir(\dirname($file), 0o777, true);
         file_put_contents($file, "# \$schema: none\n- invalid");
@@ -284,7 +284,7 @@ bar';
     {
         $this->skipIfJsonSchemaMissing();
 
-        $projectDir = sys_get_temp_dir().'/yml-lint-test';
+        $projectDir = sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__);
         @mkdir($projectDir.'/config', 0o777, true);
         file_put_contents($projectDir.'/config/schema.json', json_encode(['type' => 'object']));
         $this->files[] = $projectDir.'/config/schema.json';
@@ -310,7 +310,7 @@ bar';
     {
         $this->skipIfJsonSchemaMissing();
 
-        $projectDir = sys_get_temp_dir().'/yml-lint-test';
+        $projectDir = sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__);
         @mkdir($projectDir.'/config', 0o777, true);
         $schema = $projectDir.'/config/schema.json';
         file_put_contents($schema, json_encode(['type' => 'object']));
@@ -363,7 +363,7 @@ bar';
 
     private function createFile($content): string
     {
-        $filename = tempnam(sys_get_temp_dir().'/yml-lint-test', 'sf-');
+        $filename = tempnam(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__), 'sf-');
         file_put_contents($filename, $content);
 
         $this->files[] = $filename;
@@ -392,7 +392,7 @@ bar';
             ->expects($this->once())
             ->method('locateResource')
             ->with('@AppBundle/Resources')
-            ->willReturn(sys_get_temp_dir().'/yml-lint-test');
+            ->willReturn(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__));
 
         $application = $this->createMock(Application::class);
         $application
@@ -420,7 +420,7 @@ bar';
 
     protected function setUp(): void
     {
-        @mkdir(sys_get_temp_dir().'/yml-lint-test');
+        @mkdir(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__));
         $this->files = [];
     }
 
@@ -431,6 +431,6 @@ bar';
                 @unlink($file);
             }
         }
-        @rmdir(sys_get_temp_dir().'/yml-lint-test');
+        @rmdir(sys_get_temp_dir().'/sf_framework-bundle_'.hash('xxh32', __FILE__));
     }
 }

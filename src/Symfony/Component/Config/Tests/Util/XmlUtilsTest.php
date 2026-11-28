@@ -88,14 +88,15 @@ class XmlUtilsTest extends TestCase
             $this->markTestSkipped('chmod is not supported on Windows');
         }
 
-        $fixtures = __DIR__.'/../Fixtures/Util/';
+        $notReadableFile = sys_get_temp_dir().'/sf_config_'.hash('xxh32', __FILE__).'.xml';
+        touch($notReadableFile);
 
         try {
-            chmod($fixtures.'not_readable.xml', 0o00);
-            XmlUtils::loadFile($fixtures.'not_readable.xml');
+            chmod($notReadableFile, 0o00);
+            XmlUtils::loadFile($notReadableFile);
             $this->fail();
         } catch (\InvalidArgumentException $e) {
-            chmod($fixtures.'not_readable.xml', 0o644);
+            unlink($notReadableFile);
             $this->assertStringContainsString('is not readable', $e->getMessage());
         }
     }
